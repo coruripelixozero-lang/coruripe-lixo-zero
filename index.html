@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coruripe Lixo Zero - Denúncia e Satisfação</title>
+    <meta name="description"
+        content="Portal de denúncia de acúmulo de lixo e pesquisa de satisfação para a cidade de Coruripe, Alagoas.">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Titan+One&display=swap"
+        rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <button id="themeBtn" class="theme-btn" aria-label="Alternar tema"><span class="theme-icon">☀️</span></button>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="logos-container">
+                <img src="logo-coruripe.png" alt="Prefeitura de Coruripe" class="logo">
+                <img src="logo-cide.png" alt="CIDE" class="logo">
+            </div>
+            <h1><a href="index.html" class="site-title">CoruripeLixoZero</a></h1>
+            <p>Ajude a manter nossa cidade limpa. Registre focos de lixo e avalie nossos
+                serviços.</p>
+        </header>
+
+        <form id="reportForm" action="https://formsubmit.co/coruripelixozero@gmail.com" method="POST"
+            enctype="multipart/form-data">
+            <!-- FormSubmit Configuration -->
+            <input type="hidden" id="emailSubject" name="_subject" value="Nova Denúncia - CoruripeLixoZero">
+            <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="_template" value="table">
+
+            <!-- Personal Info Section -->
+            <section class="card">
+                <h2>👤 Seus Dados (Opcional)</h2>
+                <p>Identifique-se para que possamos entrar em contato se necessário.</p>
+                <div class="form-group">
+                    <label for="userName">Nome Completo</label>
+                    <input type="text" id="userName" name="userName" placeholder="Seu nome">
+                </div>
+                <div class="form-group">
+                    <label for="userPhone">Telefone / WhatsApp</label>
+                    <input type="text" id="userPhone" name="userPhone" placeholder="(82) 99999-9999">
+                </div>
+            </section>
+
+            <!-- Photo Upload Section -->
+            <section class="card">
+                <h2>📸 Registro Fotográfico</h2>
+                <p>Tire uma foto do local ou carregue da sua galeria.</p>
+                <div class="upload-options">
+                    <button type="button" id="btnCamera" class="upload-btn camera-btn"><i>📷</i> <span>Usar
+                            Câmera</span></button>
+                    <label for="trashPhotoGallery" class="upload-btn gallery-btn">
+                        <input type="file" id="trashPhotoGallery" name="trashPhotoGallery" accept="image/*" hidden>
+                        <i>🖼️</i> <span>Galeria</span>
+                    </label>
+                    <input type="file" id="trashPhotoCamera" name="trashPhotoCamera" accept="image/*"
+                        capture="environment" hidden>
+                </div>
+                <div id="previewContainer" style="display: none; margin-top: 1rem;">
+                    <img id="imagePreview" alt="Prévia da imagem">
+                    <button type="button" id="removeImage" class="btn-text">Remover
+                        foto</button>
+                </div>
+            </section>
+
+            <!-- Manual Address Section -->
+            <section class="card">
+                <h2>🏠 Endereço (Opcional)</h2>
+                <p>Se preferir, informe o endereço manualmente.</p>
+                <div class="form-group">
+                    <label for="addressStreet">Rua / Logradouro</label>
+                    <input type="text" id="addressStreet" name="addressStreet" placeholder="Ex: Rua da Praia">
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="addressNumber">Número</label>
+                        <input type="text" id="addressNumber" name="addressNumber" placeholder="Ex: 123">
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label for="addressNeighborhood">Bairro</label>
+                        <input type="text" id="addressNeighborhood" name="addressNeighborhood" placeholder="Ex: Centro">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="addressReference">Ponto de Referência</label>
+                    <input type="text" id="addressReference" name="addressReference"
+                        placeholder="Ex: Próximo ao mercado">
+                </div>
+            </section>
+
+            <!-- Map Section -->
+            <section class="card">
+                <h2>📍 Localização no Mapa</h2>
+                <p>Toque no mapa para marcar onde o lixo está acumulado.</p>
+                <div class="map-controls">
+                    <button type="button" id="btnMyLocation" class="btn-location"><i>📍</i>
+                        Minha Localização
+                        Atual</button>
+                </div>
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+                <input type="hidden" id="latitude" name="latitude" required>
+                <input type="hidden" id="longitude" name="longitude" required>
+                <p id="locationStatus" style="margin-top: 1rem; font-size: 0.9rem; color: var(--primary);">
+                    Nenhum local
+                    selecionado.</p>
+            </section>
+
+            <!-- Satisfaction Survey -->
+            <section class="card">
+                <h2>📊 Pesquisa de Satisfação</h2>
+                <p>Como você avalia a limpeza geral de Coruripe hoje?</p>
+                <div class="rating-group">
+                    <div class="rating-option"><input type="radio" name="satisfaction" value="1" id="sat-1"
+                            required><label class="rating-label" for="sat-1"><span
+                                class="rating-emoji">😠</span><span>Péssimo</span></label>
+                    </div>
+                    <div class="rating-option"><input type="radio" name="satisfaction" value="2" id="sat-2"><label
+                            class="rating-label" for="sat-2"><span
+                                class="rating-emoji">😕</span><span>Ruim</span></label>
+                    </div>
+                    <div class="rating-option"><input type="radio" name="satisfaction" value="3" id="sat-3"><label
+                            class="rating-label" for="sat-3"><span
+                                class="rating-emoji">😐</span><span>Regular</span></label>
+                    </div>
+                    <div class="rating-option"><input type="radio" name="satisfaction" value="4" id="sat-4"><label
+                            class="rating-label" for="sat-4"><span
+                                class="rating-emoji">🙂</span><span>Bom</span></label></div>
+                    <div class="rating-option"><input type="radio" name="satisfaction" value="5" id="sat-5"><label
+                            class="rating-label" for="sat-5"><span
+                                class="rating-emoji">🤩</span><span>Excelente</span></label>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label for="comments">Comentários adicionais (opcional)</label>
+                    <textarea id="comments" name="comments" rows="3"
+                        placeholder="Descreva melhor o problema ou deixe uma sugestão..."></textarea>
+                </div>
+            </section>
+
+            <button type="submit" class="btn-submit">Enviar Relatório</button>
+        </form>
+
+        <footer style="text-align: center; margin-top: 3rem; color: var(--text-secondary); font-size: 0.9rem;">
+            <p>&copy; 2025 Prefeitura Municipal de Coruripe - Alagoas</p>
+        </footer>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+
+</body>
+
+</html>
