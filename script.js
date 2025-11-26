@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     container.items.add(file);
 
                                     cameraInput.files = container.files;
-                                    galleryInput.files = container.files;
+                                    galleryInput.value = ''; // Clear gallery input to avoid duplicates
 
                                     console.log("Photo attached:", file.name, file.size, "bytes");
                                 } else {
@@ -297,35 +297,37 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '📤 Enviando...';
 
-            // Add Map Link
-            let mapLinkInput = document.getElementById('mapLink');
-            if (!mapLinkInput) {
-                mapLinkInput = document.createElement('input');
-                mapLinkInput.type = 'hidden';
-                mapLinkInput.name = 'Mapa Link';
-                mapLinkInput.id = 'mapLink';
-                form.appendChild(mapLinkInput);
-            }
-            mapLinkInput.value = `https://www.google.com/maps/search/?api=1&query=${latInput.value},${lngInput.value}`;
+            // Create hidden inputs for dynamic data (timestamp and mapLink)
+            const addHiddenInput = (name, value) => {
+                let input = form.querySelector(`input[name="${name}"]`);
+                if (!input) {
+                    input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    form.appendChild(input);
+                }
+                input.value = value;
+            };
 
-            // Update email subject with timestamp
-            const subjectInput = document.getElementById('emailSubject');
-            if (subjectInput) {
-                const ts = new Date().toLocaleString('pt-BR');
-                subjectInput.value = `Nova Denúncia - CoruripeLixoZero - ${ts}`;
-            }
+            addHiddenInput('timestamp', new Date().toLocaleString('pt-BR'));
+            addHiddenInput('mapLink', `https://www.google.com/maps/search/?api=1&query=${latInput.value},${lngInput.value}`);
 
-            // Submit via FormSubmit
-            const formData = new FormData(form);
+            // Disable empty file inputs to prevent sending empty attachments
+            // and ensure we don't send duplicates if both inputs somehow have data
+            if (!cameraInput.value) cameraInput.disabled = true;
+            if (!galleryInput.value) galleryInput.disabled = true;
 
             try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
+                // Send email via EmailJS using sendForm (supports attachments)
+                // Passing public key as options object (required for v4)
+                const response = await emailjs.sendForm(
+                    'service_4qehd6j',  // Service ID
+                    'template_rfq2zo5', // Template ID
+                    form,
+                    { publicKey: 'xochWN2TXVL6x0qjv' } // Public Key in options object
+                );
+
+                console.log('Email sent successfully:', response);
 
                 // Show thank you message
                 document.body.innerHTML = `
@@ -343,10 +345,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             } catch (error) {
-                console.error('Submission error:', error);
+                console.error('Email sending failed:', error);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
-                alert('Erro ao enviar. Por favor, tente novamente.');
+                alert('❌ Erro ao enviar denúncia. Por favor, tente novamente.\n\nDetalhes: ' + JSON.stringify(error));
             }
         });
     }
