@@ -2,19 +2,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Map centered on Coruripe, Alagoas
     // Coordinates: -10.1256, -36.1756 (Approximate center of Coruripe)
     const map = L.map('map').setView([-10.1256, -36.1756], 13);
-
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-
     let currentMarker = null;
     let accuracyCircle = null;
     const latInput = document.getElementById('latitude');
     const lngInput = document.getElementById('longitude');
     const locationStatus = document.getElementById('locationStatus');
-
     // Handle Map Click
     map.on('click', (e) => {
         updateMarker(e.latlng.lat, e.latlng.lng);
@@ -24,28 +21,22 @@ document.addEventListener('DOMContentLoaded', () => {
             accuracyCircle = null;
         }
     });
-
     function updateMarker(lat, lng) {
         // Remove existing marker if any
         if (currentMarker) {
             map.removeLayer(currentMarker);
         }
-
         // Add new marker
         currentMarker = L.marker([lat, lng]).addTo(map);
-
         // Update hidden inputs
         latInput.value = lat;
         lngInput.value = lng;
-
         // Update status text
         locationStatus.textContent = `Local selecionado: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
         locationStatus.style.color = 'var(--primary-dark)';
-
         // Animation effect
         map.panTo([lat, lng], { animate: true, duration: 0.5 });
     }
-
     // Handle "My Location" Button with High Accuracy
     const btnMyLocation = document.getElementById('btnMyLocation');
     if (btnMyLocation) {
@@ -54,26 +45,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const originalText = btnMyLocation.innerHTML;
                 btnMyLocation.innerHTML = '<i>⌛</i> Buscando GPS...';
                 btnMyLocation.disabled = true;
-
                 const options = {
                     enableHighAccuracy: true,
                     timeout: 15000,
                     maximumAge: 0
                 };
-
                 navigator.geolocation.getCurrentPosition((position) => {
                     const { latitude, longitude, accuracy } = position.coords;
-
                     // Update marker
                     updateMarker(latitude, longitude);
-
                     // Show accuracy circle
                     if (accuracyCircle) map.removeLayer(accuracyCircle);
                     accuracyCircle = L.circle([latitude, longitude], { radius: accuracy }).addTo(map);
-
                     // Zoom to location
                     map.setView([latitude, longitude], 18);
-
                     btnMyLocation.innerHTML = '<i>📍</i> Minha Localização Atual';
                     btnMyLocation.disabled = false;
                     locationStatus.innerHTML = `Local encontrado! <br><small>(Precisão: ${Math.round(accuracy)} metros)</small>`;
@@ -82,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.error("Error getting location:", error);
                     let msg = 'Erro ao obter localização.';
                     let helpHTML = '';
-
                     if (error.code === 1) {
                         msg = '🔒 Permissão de localização negada';
                         helpHTML = `
@@ -116,9 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         `;
                     }
-
                     locationStatus.innerHTML = `<strong style="color: var(--error);">${msg}</strong>${helpHTML}`;
-
                     btnMyLocation.innerHTML = originalText;
                     btnMyLocation.disabled = false;
                 }, options);
@@ -127,7 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
     // Camera & File Upload Logic
     const cameraInput = document.getElementById('trashPhotoCamera');
     const galleryInput = document.getElementById('trashPhotoGallery');
@@ -136,21 +117,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const removeImageBtn = document.getElementById('removeImage');
     const uploadOptions = document.querySelector('.upload-options');
     const btnCamera = document.getElementById('btnCamera');
-
     let cameraStream = null;
-
     // Handle "Usar Câmera" click (Inline Camera)
     if (btnCamera) {
         btnCamera.addEventListener('click', async (e) => {
             e.preventDefault();
-
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 try {
                     uploadOptions.style.display = 'none';
                     previewContainer.style.display = 'block';
                     imagePreview.style.display = 'none';
                     removeImageBtn.style.display = 'none';
-
                     let video = document.getElementById('cameraVideo');
                     if (!video) {
                         video = document.createElement('video');
@@ -163,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         previewContainer.insertBefore(video, removeImageBtn);
                     }
                     video.style.display = 'block';
-
                     let captureBtn = document.getElementById('btnCapture');
                     if (!captureBtn) {
                         captureBtn = document.createElement('button');
@@ -173,35 +149,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         captureBtn.textContent = '📸 Capturar Foto';
                         captureBtn.style.marginBottom = '1rem';
                         previewContainer.insertBefore(captureBtn, removeImageBtn);
-
                         captureBtn.addEventListener('click', () => {
                             const canvas = document.createElement('canvas');
                             canvas.width = video.videoWidth;
                             canvas.height = video.videoHeight;
                             canvas.getContext('2d').drawImage(video, 0, 0);
-
                             imagePreview.src = canvas.toDataURL('image/jpeg');
                             imagePreview.style.display = 'block';
-
                             stopCamera();
-
                             removeImageBtn.style.display = 'inline-block';
                             video.style.display = 'none';
                             captureBtn.style.display = 'none';
-
                             canvas.toBlob(blob => {
                                 if (blob) {
                                     const file = new File([blob], "foto_denuncia_" + Date.now() + ".jpg", {
                                         type: "image/jpeg",
                                         lastModified: Date.now()
                                     });
-
                                     const container = new DataTransfer();
                                     container.items.add(file);
-
                                     cameraInput.files = container.files;
                                     galleryInput.value = ''; // Clear gallery input to avoid duplicates
-
                                     console.log("Photo attached:", file.name, file.size, "bytes");
                                 } else {
                                     console.error("Failed to convert photo to blob");
@@ -210,12 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                     }
                     captureBtn.style.display = 'block';
-
                     cameraStream = await navigator.mediaDevices.getUserMedia({
                         video: { facingMode: "environment" }
                     });
                     video.srcObject = cameraStream;
-
                 } catch (err) {
                     console.error("Camera failed:", err);
                     stopCamera();
@@ -229,14 +195,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
     function stopCamera() {
         if (cameraStream) {
             cameraStream.getTracks().forEach(track => track.stop());
             cameraStream = null;
         }
     }
-
     // Handle File Select
     function handleFileSelect(e) {
         const file = e.target.files[0];
@@ -247,9 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 imagePreview.style.display = 'block';
                 previewContainer.style.display = 'block';
                 if (uploadOptions) uploadOptions.style.display = 'none';
-
                 removeImageBtn.style.display = 'inline-block';
-
                 const video = document.getElementById('cameraVideo');
                 const captureBtn = document.getElementById('btnCapture');
                 if (video) video.style.display = 'none';
@@ -258,10 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.readAsDataURL(file);
         }
     }
-
     if (cameraInput) cameraInput.addEventListener('change', handleFileSelect);
     if (galleryInput) galleryInput.addEventListener('change', handleFileSelect);
-
     if (removeImageBtn) {
         removeImageBtn.addEventListener('click', () => {
             if (cameraInput) cameraInput.value = '';
@@ -272,31 +232,24 @@ document.addEventListener('DOMContentLoaded', () => {
             stopCamera();
         });
     }
-
     // Handle Form Submission
     const form = document.getElementById('reportForm');
-
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             // Basic validation
             const hasLocation = latInput.value && lngInput.value;
             const hasAddress = document.getElementById('addressStreet').value.trim() !== '';
-
             if (!hasLocation && !hasAddress) {
                 alert('⚠️ Por favor, marque a localização no mapa OU informe o endereço.');
                 document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
                 return;
             }
-
             const submitBtn = form.querySelector('.btn-submit');
             const originalBtnText = submitBtn.innerHTML;
-
             // UI Feedback: Sending
             submitBtn.disabled = true;
             submitBtn.innerHTML = '📤 Enviando...';
-
             // Create hidden inputs for dynamic data (timestamp and mapLink)
             const addHiddenInput = (name, value) => {
                 let input = form.querySelector(`input[name="${name}"]`);
@@ -308,48 +261,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 input.value = value;
             };
-
             addHiddenInput('timestamp', new Date().toLocaleString('pt-BR'));
             addHiddenInput('mapLink', `https://www.google.com/maps/search/?api=1&query=${latInput.value},${lngInput.value}`);
-
             // Disable empty file inputs to prevent sending empty attachments
             // and ensure we don't send duplicates if both inputs somehow have data
             if (!cameraInput.value) cameraInput.disabled = true;
             if (!galleryInput.value) galleryInput.disabled = true;
-
             // Create FormData object
             const formData = new FormData(form);
-
+            
             // Add EmailJS specific fields
             formData.append('service_id', 'service_4qehd6j');
             formData.append('template_id', 'template_rfq2zo5');
             formData.append('user_id', 'xochWN2TXVL6x0qjv');
-
-            // Add dynamic fields manually if they aren't in the form (they are hidden inputs now, so they are in form)
-            // But we need to make sure hidden inputs were added BEFORE creating FormData
-            // The addHiddenInput calls happen above, so we are good.
-
-            // Handle file inputs: ensure we only send the one that has a file
-            // FormData automatically includes file inputs.
-            // But we disabled the empty ones above, so they won't be included.
-            // However, we need to make sure the file input name matches what we want in the template?
-            // Actually, EmailJS attaches ALL files found in the form data.
-            // We just need to make sure we don't send duplicates.
-
             // Debug: Log FormData entries
             for (let pair of formData.entries()) {
                 console.log(pair[0] + ', ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
             }
-
             try {
                 const response = await fetch('https://api.emailjs.com/api/v1.0/email/send-form', {
                     method: 'POST',
                     body: formData
                 });
-
                 if (response.ok) {
                     console.log('Email sent successfully');
-
                     // Show thank you message
                     document.body.innerHTML = `
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center; background: var(--bg);">
@@ -373,33 +308,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Email sending failed:', error);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
-
                 // Re-enable file inputs so user can try again
                 if (cameraInput) cameraInput.disabled = false;
                 if (galleryInput) galleryInput.disabled = false;
-
                 alert('❌ Erro ao enviar denúncia. Por favor, tente novamente.\n\nDetalhes: ' + error.message);
             }
         });
     }
-
     // Theme Toggle Logic
     const themeBtn = document.getElementById('themeBtn');
     if (themeBtn) {
         const themeIcon = themeBtn.querySelector('.theme-icon');
         const body = document.body;
-
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
             body.classList.add('dark-mode');
             themeIcon.textContent = '🌙';
         }
-
         themeBtn.addEventListener('click', (e) => {
             e.preventDefault();
             body.classList.toggle('dark-mode');
             const isDark = body.classList.contains('dark-mode');
-
             themeIcon.textContent = isDark ? '🌙' : '☀️';
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         });
