@@ -297,35 +297,35 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '📤 Enviando...';
 
-            // Create hidden inputs for dynamic data (timestamp and mapLink)
-            const addHiddenInput = (name, value) => {
-                let input = form.querySelector(`input[name="${name}"]`);
-                if (!input) {
-                    input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = name;
-                    form.appendChild(input);
-                }
-                input.value = value;
-            };
+            // Add Map Link
+            let mapLinkInput = document.getElementById('mapLink');
+            if (!mapLinkInput) {
+                mapLinkInput = document.createElement('input');
+                mapLinkInput.type = 'hidden';
+                mapLinkInput.name = 'Mapa Link';
+                mapLinkInput.id = 'mapLink';
+                form.appendChild(mapLinkInput);
+            }
+            mapLinkInput.value = `https://www.google.com/maps/search/?api=1&query=${latInput.value},${lngInput.value}`;
 
-            addHiddenInput('timestamp', new Date().toLocaleString('pt-BR'));
-            addHiddenInput('mapLink', `https://www.google.com/maps/search/?api=1&query=${latInput.value},${lngInput.value}`);
+            // Update email subject with timestamp
+            const subjectInput = document.getElementById('emailSubject');
+            if (subjectInput) {
+                const ts = new Date().toLocaleString('pt-BR');
+                subjectInput.value = `Nova Denúncia - CoruripeLixoZero - ${ts}`;
+            }
 
-            // Ensure empty file inputs are disabled so they don't send empty attachments (optional, but good practice)
-            // However, sendForm handles empty files gracefully usually.
+            // Submit via FormSubmit
+            const formData = new FormData(form);
 
             try {
-                // Send email via EmailJS using sendForm (supports attachments)
-                // Passing public key as options object (required for v4)
-                const response = await emailjs.sendForm(
-                    'service_4qehd6j',  // Service ID
-                    'template_rfq2zo5', // Template ID
-                    form,
-                    { publicKey: 'xochWN2TXVL6x0qjv' } // Public Key in options object
-                );
-
-                console.log('Email sent successfully:', response);
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
 
                 // Show thank you message
                 document.body.innerHTML = `
@@ -343,10 +343,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             } catch (error) {
-                console.error('Email sending failed:', error);
+                console.error('Submission error:', error);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
-                alert('❌ Erro ao enviar denúncia. Por favor, tente novamente.\n\nDetalhes: ' + JSON.stringify(error));
+                alert('Erro ao enviar. Por favor, tente novamente.');
             }
         });
     }
