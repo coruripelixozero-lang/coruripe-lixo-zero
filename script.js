@@ -317,10 +317,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 // Send email via EmailJS using sendForm (supports attachments)
+                // Passing public key as 4th argument to ensure it's found
                 const response = await emailjs.sendForm(
                     'service_4qehd6j',  // Service ID
                     'template_rfq2zo5', // Template ID
-                    form
+                    form,
+                    'xochWN2TXVL6x0qjv' // Public Key
                 );
 
                 console.log('Email sent successfully:', response);
