@@ -36,12 +36,8 @@
                 serviços.</p>
         </header>
 
-        <form id="reportForm" action="https://formsubmit.co/coruripelixozero@gmail.com" method="POST"
-            enctype="multipart/form-data">
-            <!-- FormSubmit Configuration -->
-            <input type="hidden" id="emailSubject" name="_subject" value="Nova Denúncia - CoruripeLixoZero">
-            <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="_template" value="table">
+        <form id="reportForm">
+            <!-- Form will be submitted via EmailJS -->
 
             <!-- Personal Info Section -->
             <section class="card">
@@ -165,8 +161,10 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <!-- Custom JS -->
-    <script src="script.js"></script>
+    <script src="script.js?v=4"></script>
 
 </body>
 
