@@ -317,38 +317,63 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!cameraInput.value) cameraInput.disabled = true;
             if (!galleryInput.value) galleryInput.disabled = true;
 
+            // Create FormData object
+            const formData = new FormData(form);
+
+            // Add EmailJS specific fields
+            formData.append('service_id', 'service_4qehd6j');
+            formData.append('template_id', 'template_rfq2zo5');
+            formData.append('user_id', 'xochWN2TXVL6x0qjv');
+
+            // Add dynamic fields manually if they aren't in the form (they are hidden inputs now, so they are in form)
+            // But we need to make sure hidden inputs were added BEFORE creating FormData
+            // The addHiddenInput calls happen above, so we are good.
+
+            // Handle file inputs: ensure we only send the one that has a file
+            // FormData automatically includes file inputs.
+            // But we disabled the empty ones above, so they won't be included.
+            // However, we need to make sure the file input name matches what we want in the template?
+            // Actually, EmailJS attaches ALL files found in the form data.
+            // We just need to make sure we don't send duplicates.
+
+            // Debug: Log FormData entries
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ', ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
+            }
+
             try {
-                // Send email via EmailJS using sendForm (supports attachments)
-                // Passing public key as options object (required for v4)
-                const response = await emailjs.sendForm(
-                    'service_4qehd6j',  // Service ID
-                    'template_rfq2zo5', // Template ID
-                    form,
-                    { publicKey: 'xochWN2TXVL6x0qjv' } // Public Key in options object
-                );
+                const response = await fetch('https://api.emailjs.com/api/v1.0/email/send-form', {
+                    method: 'POST',
+                    body: formData
+                });
 
-                console.log('Email sent successfully:', response);
+                if (response.ok) {
+                    console.log('Email sent successfully');
 
-                // Show thank you message
-                document.body.innerHTML = `
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center; background: var(--bg);">
-                        <div style="max-width: 500px;">
-                            <h1 style="font-size: 3rem; margin-bottom: 1rem;">🎉</h1>
-                            <h2 style="color: var(--primary); margin-bottom: 1rem;">Obrigado!</h2>
-                            <p style="font-size: 1.2rem; color: var(--text); margin-bottom: 2rem;">
-                                Sua denúncia foi enviada com sucesso. Agradecemos por ajudar a manter Coruripe limpa!
-                            </p>
-                            <a href="index.html" style="display: inline-block; padding: 1rem 2rem; background: var(--primary); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
-                                Fazer Nova Denúncia
-                            </a>
+                    // Show thank you message
+                    document.body.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center; background: var(--bg);">
+                            <div style="max-width: 500px;">
+                                <h1 style="font-size: 3rem; margin-bottom: 1rem;">🎉</h1>
+                                <h2 style="color: var(--primary); margin-bottom: 1rem;">Obrigado!</h2>
+                                <p style="font-size: 1.2rem; color: var(--text); margin-bottom: 2rem;">
+                                    Sua denúncia foi enviada com sucesso. Agradecemos por ajudar a manter Coruripe limpa!
+                                </p>
+                                <a href="index.html" style="display: inline-block; padding: 1rem 2rem; background: var(--primary); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                                    Fazer Nova Denúncia
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    throw new Error('EmailJS API Error: ' + errorText);
+                }
             } catch (error) {
                 console.error('Email sending failed:', error);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
-                alert('❌ Erro ao enviar denúncia. Por favor, tente novamente.\n\nDetalhes: ' + JSON.stringify(error));
+                alert('❌ Erro ao enviar denúncia. Por favor, tente novamente.\n\nDetalhes: ' + error.message);
             }
         });
     }
