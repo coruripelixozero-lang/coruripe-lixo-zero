@@ -297,31 +297,30 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '📤 Enviando...';
 
-            // Initialize EmailJS
-            emailjs.init('xochWN2TXVL6x0qjv');
-
-            // Prepare template parameters
-            const templateParams = {
-                timestamp: new Date().toLocaleString('pt-BR'),
-                userName: document.getElementById('userName').value || 'Não informado',
-                userPhone: document.getElementById('userPhone').value || 'Não informado',
-                latitude: latInput.value || 'Não informado',
-                longitude: lngInput.value || 'Não informado',
-                mapLink: `https://www.google.com/maps/search/?api=1&query=${latInput.value},${lngInput.value}`,
-                addressStreet: document.getElementById('addressStreet').value || 'Não informado',
-                addressNumber: document.getElementById('addressNumber').value || '',
-                addressNeighborhood: document.getElementById('addressNeighborhood').value || '',
-                addressReference: document.getElementById('addressReference').value || 'Não informado',
-                satisfaction: document.querySelector('input[name="satisfaction"]:checked')?.value || 'Não informado',
-                comments: document.getElementById('comments').value || 'Nenhum comentário'
+            // Create hidden inputs for dynamic data (timestamp and mapLink)
+            const addHiddenInput = (name, value) => {
+                let input = form.querySelector(`input[name="${name}"]`);
+                if (!input) {
+                    input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    form.appendChild(input);
+                }
+                input.value = value;
             };
 
+            addHiddenInput('timestamp', new Date().toLocaleString('pt-BR'));
+            addHiddenInput('mapLink', `https://www.google.com/maps/search/?api=1&query=${latInput.value},${lngInput.value}`);
+
+            // Ensure empty file inputs are disabled so they don't send empty attachments (optional, but good practice)
+            // However, sendForm handles empty files gracefully usually.
+
             try {
-                // Send email via EmailJS
-                const response = await emailjs.send(
+                // Send email via EmailJS using sendForm (supports attachments)
+                const response = await emailjs.sendForm(
                     'service_4qehd6j',  // Service ID
                     'template_rfq2zo5', // Template ID
-                    templateParams
+                    form
                 );
 
                 console.log('Email sent successfully:', response);
