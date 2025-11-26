@@ -373,6 +373,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Email sending failed:', error);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
+
+                // Re-enable file inputs so user can try again
+                if (cameraInput) cameraInput.disabled = false;
+                if (galleryInput) galleryInput.disabled = false;
+
                 alert('❌ Erro ao enviar denúncia. Por favor, tente novamente.\n\nDetalhes: ' + error.message);
             }
         });
