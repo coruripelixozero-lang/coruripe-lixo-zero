@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 // Send email via EmailJS
                 const response = await emailjs.send(
-                    'service_daih1kh',  // Service ID
+                    'service_4qehd6j',  // Service ID
                     'template_rfq2zo5', // Template ID
                     templateParams
                 );
