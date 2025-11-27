@@ -250,6 +250,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // UI Feedback: Sending
             submitBtn.disabled = true;
             submitBtn.innerHTML = '📤 Enviando...';
+            // ImgBB API Key (USER MUST REPLACE THIS)
+            const IMGBB_API_KEY = '812c9009182698b6c234b8e903a82717';
             // Create hidden inputs for dynamic data (timestamp and mapLink)
             const addHiddenInput = (name, value) => {
                 let input = form.querySelector(`input[name="${name}"]`);
@@ -263,10 +265,50 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             addHiddenInput('timestamp', new Date().toLocaleString('pt-BR'));
             addHiddenInput('mapLink', `https://www.google.com/maps/search/?api=1&query=${latInput.value},${lngInput.value}`);
-            // Disable empty file inputs to prevent sending empty attachments
-            // and ensure we don't send duplicates if both inputs somehow have data
-            if (!cameraInput.value) cameraInput.disabled = true;
-            if (!galleryInput.value) galleryInput.disabled = true;
+            // Check if there's a photo to upload
+            let photoUrl = '';
+            const photoFile = cameraInput.files[0] || galleryInput.files[0];
+            if (photoFile) {
+                try {
+                    submitBtn.innerHTML = '📸 Fazendo upload da foto...';
+                    // Convert file to base64
+                    const reader = new FileReader();
+                    const base64Promise = new Promise((resolve, reject) => {
+                        reader.onload = () => resolve(reader.result.split(',')[1]); // Remove data:image/jpeg;base64, prefix
+                        reader.onerror = reject;
+                        reader.readAsDataURL(photoFile);
+                    });
+                    const base64Image = await base64Promise;
+                    // Upload to ImgBB
+                    const imgbbFormData = new FormData();
+                    imgbbFormData.append('key', IMGBB_API_KEY);
+                    imgbbFormData.append('image', base64Image);
+                    const imgbbResponse = await fetch('https://api.imgbb.com/1/upload', {
+                        method: 'POST',
+                        body: imgbbFormData
+                    });
+                    if (!imgbbResponse.ok) {
+                        throw new Error('Falha no upload da imagem para ImgBB');
+                    }
+                    const imgbbData = await imgbbResponse.json();
+                    photoUrl = imgbbData.data.url;
+                    console.log('Foto enviada para ImgBB:', photoUrl);
+                } catch (error) {
+                    console.error('Erro ao fazer upload da foto:', error);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                    alert('❌ Erro ao fazer upload da foto. Por favor, tente novamente.\n\nDetalhes: ' + error.message);
+                    return;
+                }
+            }
+            // Add photo URL to form data
+            if (photoUrl) {
+                addHiddenInput('photoUrl', photoUrl);
+            }
+            // Disable file inputs (we don't need to send them anymore)
+            if (cameraInput) cameraInput.disabled = true;
+            if (galleryInput) galleryInput.disabled = true;
+            submitBtn.innerHTML = '📧 Enviando email...';
             // Create FormData object
             const formData = new FormData(form);
             
