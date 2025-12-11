@@ -1,0 +1,28 @@
+{
+    "name": "Coruripe Lixo Zero",
+    "short_name": "Lixo Zero",
+    "description": "App para denúncia de lixo em Coruripe, AL",
+    "start_url": "/coruripe-lixo-zero/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4CAF50",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "icon.png",
+            "sizes": "1024x1024",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "logo-coruripe-removebg-preview.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "logo-cide-new.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
